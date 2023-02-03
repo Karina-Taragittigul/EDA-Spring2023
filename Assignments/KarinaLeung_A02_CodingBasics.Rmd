@@ -31,17 +31,20 @@ This exercise accompanies the lessons in Environmental Data Analytics on coding 
 4.  Insert comments in your code to describe what you are doing.
 
 ```{r}
-#1. I'm using seq(1, 100, 4) since the format is seq(starting number, ending number, interval number), and assigning this function to seq100.
+#1. I'm using seq(1, 100, 4) since the format is seq(starting number, ending number, interval number), 
+#and assigning this function to seq100.
 seq100 <- seq(1, 100, 4)
 
-#2. I used the mean and median function on the object seq100 I made up above and assigned them both to a mean_seq100 and median_seq100 respectively so I could call them later on.
+#2. I used the mean and median function on the object seq100 I made up above and assigned them both to
+#a mean_seq100 and median_seq100 respectively so I could call them later on.
 mean_seq100 <- mean(seq100)
 median_seq100 <- median(seq100)  
 
 mean_seq100
 median_seq100
 
-#3. I typed this command to see if the output if R was true or false, and the output was false. This means the mean is not greater than the median.
+#3. I typed this command to see if the output if R was true or false, and the output was false.
+#This means the mean is not greater than the median.
 mean_seq100 > median_seq100
 
 ```
