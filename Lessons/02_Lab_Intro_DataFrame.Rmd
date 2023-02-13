@@ -103,14 +103,15 @@ create_df
 Some useful functions to use with data frames.
 
 ```{r}
-ncol(df)  
-nrow(df)  
+ncol(df) #tells you number of columns
+nrow(df) #tells you number of rows
 length(df)  #same as ncol
-summary(df)
-head(df) #show the first 6 rows of df
+summary(df) #gives you summary statistics for each column
+head(df) #show the first 6 rows of df; if head(df, n=#ofrows) then shows you that number of rows
 
 #If you know the number of the column you want you can refer to that to access column
-df[,1]
+df[,1] #prints that column of the data set; nothing before the , tells R to print all rows and that one column
+#df[1:10,1:2] tells R to show rows 1-10 and then columns 1-2; it's "df[rows,columns]"
 
 #you could also use this notation to delete columns
 df <- df[,-2]
