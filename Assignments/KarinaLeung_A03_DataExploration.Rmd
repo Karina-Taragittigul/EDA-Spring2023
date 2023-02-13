@@ -42,16 +42,15 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80), tidy=TRUE)
 ```
 
 
-```{r,  message = FALSE}
+```{r setup cont,  message = FALSE}
 install.packages('tidyverse')
 library(tidyverse)
 library(lubridate)
 ```
 
-```{r}
+```{r working directory}
 getwd()
-read.csv("ECOTOX_Neonicotinoids_Insects_raw.csv")
-read.csv("NEON_NIWO_Litter_massdata_2018-08_raw.csv")
+# I imported the data sets without using the code, I just uploaded them from my files.
 ```
 
 
@@ -68,103 +67,127 @@ read.csv("NEON_NIWO_Litter_massdata_2018-08_raw.csv")
 4.  How is litter and woody debris sampled as part of the NEON network? Read the NEON_Litterfall_UserGuide.pdf document to learn more. List three pieces of salient information about the sampling methods here:
 
 > Answer: 
- 1.
- 2.
- 3. 
+ 1. One aspect of the spatial sampling design is that litter and fine woody debris were sampled at NEON sites that contain woody vegetation greater than 2 meters tall.
+ 2. Another aspect is that the trap placement used to obtain the litter and fine woody debris could either be targeted or randomized depending on the surrounding vegetation (e.g., sites with more than 50% aerial cover of woody vegetation that's greater than 2 meters in height, the placement of the traps is random).
+ 3. Ground traps were sampled once per year, but target sampling for elevated traps was once every two weeks.
 
 ## Obtain basic summaries of your data (Neonics)
 
 5.  What are the dimensions of the dataset?
 
-```{r}
-
+```{r dimensions}
+dim(ECOTOX_Neonicotinoids_Insects_raw)
 ```
+
+> Answer: The dimensions are 4623 rows and 30 columns.
 
 6.  Using the `summary` function on the "Effect" column, determine the most common effects that are studied. Why might these effects specifically be of interest?
 
-```{r}
+```{r Effects}
+
+summary(ECOTOX_Neonicotinoids_Insects_raw$Effect)
+table(ECOTOX_Neonicotinoids_Insects_raw$Effect)
+
 
 ```
 
-> Answer:
+> Answer: The "Effect" column is a character class, so it does not show what the common effects are. However, we can use the table() function to show the frequency each effect shows up. From the table() output, Population is the most common effect followed by Mortality. These might specifically be of interest since neonicotinoids act as an insecticide and could have an effect on population of insects, or insect deaths for crop/agricultural purposes.
 
 
 7.  Using the `summary` function, determine the six most commonly studied species in the dataset (common name). What do these species have in common, and why might they be of interest over other insects? Feel free to do a brief internet search for more information if needed.[TIP: The `sort()` command can sort the output of the summary command...]
 
-```{r}
-
+```{r Species}
+summary(ECOTOX_Neonicotinoids_Insects_raw$`Species Common Name`)
+table(ECOTOX_Neonicotinoids_Insects_raw$`Species Common Name`) %>% sort(ECOTOX_Neonicotinoids_Insects_raw$`Species Common Name`, decreasing = TRUE)
 ```
 
-> Answer:
+> Answer: The six most commonly studied species are the Honey bee, Parasitic wasp, Buff tailed bumblebee, Carniolan honey bee, bumble bee, and the Italian Honey bee
 
 8.  Concentrations are always a numeric value. What is the class of `Conc.1..Author.` column in the dataset, and why is it not numeric?
 
-```{r}
-
+```{r Author value}
+class(ECOTOX_Neonicotinoids_Insects_raw$`Conc 1 (Author)`)
 ```
 
-> Answer:
+> Answer: There are "NR" values located in the 'Conc 1 (Author)' column, and since R makes the column class that of the least common value, it made the entire column categorical instead of numeric.
 
 ## Explore your data graphically (Neonics)
 
 9.  Using `geom_freqpoly`, generate a plot of the number of studies conducted by publication year.
 
-```{r}
-
+```{r frequency graph}
+ggplot(ECOTOX_Neonicotinoids_Insects_raw) +
+  geom_freqpoly(aes(x = ECOTOX_Neonicotinoids_Insects_raw$`Publication Year`), bins = 20, color = "blue")
+ 
 ```
 
 10. Reproduce the same graph but now add a color aesthetic so that different Test.Location are displayed as different colors.
 
-```{r}
-
+```{r freq graph with 2 factors}
+ggplot(ECOTOX_Neonicotinoids_Insects_raw) +
+  geom_freqpoly(aes(x = ECOTOX_Neonicotinoids_Insects_raw$`Publication Year`, color = ECOTOX_Neonicotinoids_Insects_raw$`Test Location`), bins = 50) +
+  theme(legend.position = "top")
 ```
 
 Interpret this graph. What are the most common test locations, and do they differ over time?
 
-> Answer:
+> Answer: The most common test functions at first are "lab" test locations which switches overtime with "field natural" location. In more recent years, "lab" test locations have become more prolific over any other test location.
 
 11. Create a bar graph of Endpoint counts. What are the two most common end points, and how are they defined? Consult the ECOTOX_CodeAppendix for more information. 
 
 [**TIP**: Add `theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))` to the end of your plot command to rotate and align the X-axis labels...]
 
-```{r}
-
+```{r bargraph of endpoints}
+ggplot(ECOTOX_Neonicotinoids_Insects_raw) +
+  geom_bar(aes(x = ECOTOX_Neonicotinoids_Insects_raw$Endpoint)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
-> Answer:
+> Answer: The two most common endpoints are "NOEL" which means  no-observable-effect-level (the highest dosage that produced effects NOT significantly different from control responses) and "LOEL" which means lowest-observable-effect-level (the lowest dosage that produced effects that were significantly different from control responses).
 
 ## Explore your data (Litter)
 
 12. Determine the class of collectDate. Is it a date? If not, change to a date and confirm the new class of the variable. Using the `unique` function, determine which dates litter was sampled in August 2018.
 
-```{r}
-
+```{r class and unique function for collectDate}
+class(NEON_NIWO_Litter_massdata_2018_08_raw$collectDate)
+unique(NEON_NIWO_Litter_massdata_2018_08_raw$collectDate)
 ```
 
 13. Using the `unique` function, determine how many plots were sampled at Niwot Ridge. How is the information obtained from `unique` different from that obtained from `summary`?
 
-```{r}
-
+```{r unique vs summary}
+unique(NEON_NIWO_Litter_massdata_2018_08_raw$plotID)
+summary(NEON_NIWO_Litter_massdata_2018_08_raw$plotID)
 ```
 
-> Answer:
+> Answer: When running the unique() function, it tells me how many specific locations the plots were sampled at (e.g., NIWO_061 vs NIWO_064), whereas when I use summar(), it tells me how many samples were taken (e.g., length is 188).
 
 14. Create a bar graph of functionalGroup counts. This shows you what type of litter is collected at the Niwot Ridge sites. Notice that litter types are fairly equally distributed across the Niwot Ridge sites.
 
-```{r}
-
+```{r bargraph of functional group}
+ggplot(NEON_NIWO_Litter_massdata_2018_08_raw) +
+  geom_bar(aes(x = NEON_NIWO_Litter_massdata_2018_08_raw$functionalGroup)) + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
 15. Using `geom_boxplot` and `geom_violin`, create a boxplot and a violin plot of dryMass by functionalGroup.
 
-```{r}
+```{r boxplot of dryMass by functionalGroup}
+ggplot(NEON_NIWO_Litter_massdata_2018_08_raw) +
+  geom_boxplot(aes(x = NEON_NIWO_Litter_massdata_2018_08_raw$functionalGroup, y =NEON_NIWO_Litter_massdata_2018_08_raw$dryMass))
 
+```
+```{r}
+ggplot(NEON_NIWO_Litter_massdata_2018_08_raw) +
+  geom_violin(aes(x = NEON_NIWO_Litter_massdata_2018_08_raw$functionalGroup, y = NEON_NIWO_Litter_massdata_2018_08_raw$dryMass), 
+              draw_quantiles = c(0.25, 0.5, 0.75))
 ```
 
 Why is the boxplot a more effective visualization option than the violin plot in this case?
 
-> Answer:
+> Answer: Visually, the distributions of the data in the boxplot can be seen much better, and this may be because of the large outlier in the "needles" functional group which makes the density of the counts in the violin plot difficult to see.
 
 What type(s) of litter tend to have the highest biomass at these sites?
 
-> Answer:
+> Answer: Leaflitter that tend to have the highest biomass are the "needles" group since their median is the highest among all the other types of litter.
