@@ -32,10 +32,9 @@ This exercise accompanies the lessons in Environmental Data Analytics on Data Ex
 
 1.  Check your working directory, load necessary packages (tidyverse, lubridate), and upload two datasets: the ECOTOX neonicotinoid dataset (ECOTOX_Neonicotinoids_Insects_raw.csv) and the Niwot Ridge NEON dataset for litter and woody debris (NEON_NIWO_Litter_massdata_2018-08_raw.csv). Name these datasets "Neonics" and "Litter", respectively. Be sure to include the subcommand to read strings in as factors.
 
+
+
 ```{r setup, include=FALSE}
-
-
-install.packages('formatR')
 
 knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80), tidy=TRUE)
 
@@ -43,14 +42,14 @@ knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80), tidy=TRUE)
 
 
 ```{r setup cont,  message = FALSE}
-install.packages('tidyverse')
 library(tidyverse)
 library(lubridate)
 ```
 
 ```{r working directory}
 getwd()
-# I imported the data sets without using the code, I just uploaded them from my files.
+ECOTOX.Neonic.data <- read.csv("./Data/Raw/ECOTOX_Neonicotinoids_Insects_raw.csv")
+NEON.Litter.data <- read.csv("./Data/Raw/NIWO_Litter/NEON_NIWO_Litter_massdata_2018-08_raw.csv")
 ```
 
 
@@ -76,7 +75,7 @@ getwd()
 5.  What are the dimensions of the dataset?
 
 ```{r dimensions}
-dim(ECOTOX_Neonicotinoids_Insects_raw)
+dim(ECOTOX.Neonic.data)
 ```
 
 > Answer: The dimensions are 4623 rows and 30 columns.
@@ -85,8 +84,8 @@ dim(ECOTOX_Neonicotinoids_Insects_raw)
 
 ```{r Effects}
 
-summary(ECOTOX_Neonicotinoids_Insects_raw$Effect)
-table(ECOTOX_Neonicotinoids_Insects_raw$Effect)
+summary(ECOTOX.Neonic.data$Effect)
+table(ECOTOX.Neonic.data$Effect)
 
 
 ```
@@ -97,8 +96,8 @@ table(ECOTOX_Neonicotinoids_Insects_raw$Effect)
 7.  Using the `summary` function, determine the six most commonly studied species in the dataset (common name). What do these species have in common, and why might they be of interest over other insects? Feel free to do a brief internet search for more information if needed.[TIP: The `sort()` command can sort the output of the summary command...]
 
 ```{r Species}
-summary(ECOTOX_Neonicotinoids_Insects_raw$`Species Common Name`)
-table(ECOTOX_Neonicotinoids_Insects_raw$`Species Common Name`) %>% sort(ECOTOX_Neonicotinoids_Insects_raw$`Species Common Name`, decreasing = TRUE)
+summary(ECOTOX.Neonic.data$`Species.Common.Name`)
+table(ECOTOX.Neonic.data$`Species.Common.Name`) %>% sort(ECOTOX.Neonic.data$`Species.Common.Name`, decreasing = TRUE)
 ```
 
 > Answer: The six most commonly studied species are the Honey bee, Parasitic wasp, Buff tailed bumblebee, Carniolan honey bee, bumble bee, and the Italian Honey bee
@@ -106,7 +105,7 @@ table(ECOTOX_Neonicotinoids_Insects_raw$`Species Common Name`) %>% sort(ECOTOX_N
 8.  Concentrations are always a numeric value. What is the class of `Conc.1..Author.` column in the dataset, and why is it not numeric?
 
 ```{r Author value}
-class(ECOTOX_Neonicotinoids_Insects_raw$`Conc 1 (Author)`)
+class(ECOTOX.Neonic.data$`Conc.1..Author.`)
 ```
 
 > Answer: There are "NR" values located in the 'Conc 1 (Author)' column, and since R makes the column class that of the least common value, it made the entire column categorical instead of numeric.
@@ -116,16 +115,16 @@ class(ECOTOX_Neonicotinoids_Insects_raw$`Conc 1 (Author)`)
 9.  Using `geom_freqpoly`, generate a plot of the number of studies conducted by publication year.
 
 ```{r frequency graph}
-ggplot(ECOTOX_Neonicotinoids_Insects_raw) +
-  geom_freqpoly(aes(x = ECOTOX_Neonicotinoids_Insects_raw$`Publication Year`), bins = 20, color = "blue")
+ggplot(ECOTOX.Neonic.data) +
+  geom_freqpoly(aes(x = ECOTOX.Neonic.data$`Publication.Year`), bins = 20, color = "blue")
  
 ```
 
 10. Reproduce the same graph but now add a color aesthetic so that different Test.Location are displayed as different colors.
 
 ```{r freq graph with 2 factors}
-ggplot(ECOTOX_Neonicotinoids_Insects_raw) +
-  geom_freqpoly(aes(x = ECOTOX_Neonicotinoids_Insects_raw$`Publication Year`, color = ECOTOX_Neonicotinoids_Insects_raw$`Test Location`), bins = 50) +
+ggplot(ECOTOX.Neonic.data) +
+  geom_freqpoly(aes(x = ECOTOX.Neonic.data$`Publication.Year`, color = ECOTOX.Neonic.data$`Test.Location`), bins = 50) +
   theme(legend.position = "top")
 ```
 
@@ -138,8 +137,8 @@ Interpret this graph. What are the most common test locations, and do they diffe
 [**TIP**: Add `theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))` to the end of your plot command to rotate and align the X-axis labels...]
 
 ```{r bargraph of endpoints}
-ggplot(ECOTOX_Neonicotinoids_Insects_raw) +
-  geom_bar(aes(x = ECOTOX_Neonicotinoids_Insects_raw$Endpoint)) + 
+ggplot(ECOTOX.Neonic.data) +
+  geom_bar(aes(x = Endpoint)) + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
@@ -150,15 +149,15 @@ ggplot(ECOTOX_Neonicotinoids_Insects_raw) +
 12. Determine the class of collectDate. Is it a date? If not, change to a date and confirm the new class of the variable. Using the `unique` function, determine which dates litter was sampled in August 2018.
 
 ```{r class and unique function for collectDate}
-class(NEON_NIWO_Litter_massdata_2018_08_raw$collectDate)
-unique(NEON_NIWO_Litter_massdata_2018_08_raw$collectDate)
+class(NEON.Litter.data$collectDate)
+unique(NEON.Litter.data$collectDate)
 ```
 
 13. Using the `unique` function, determine how many plots were sampled at Niwot Ridge. How is the information obtained from `unique` different from that obtained from `summary`?
 
 ```{r unique vs summary}
-unique(NEON_NIWO_Litter_massdata_2018_08_raw$plotID)
-summary(NEON_NIWO_Litter_massdata_2018_08_raw$plotID)
+unique(NEON.Litter.data$plotID)
+summary(NEON.Litter.data$plotID)
 ```
 
 > Answer: When running the unique() function, it tells me how many specific locations the plots were sampled at (e.g., NIWO_061 vs NIWO_064), whereas when I use summar(), it tells me how many samples were taken (e.g., length is 188).
@@ -166,21 +165,21 @@ summary(NEON_NIWO_Litter_massdata_2018_08_raw$plotID)
 14. Create a bar graph of functionalGroup counts. This shows you what type of litter is collected at the Niwot Ridge sites. Notice that litter types are fairly equally distributed across the Niwot Ridge sites.
 
 ```{r bargraph of functional group}
-ggplot(NEON_NIWO_Litter_massdata_2018_08_raw) +
-  geom_bar(aes(x = NEON_NIWO_Litter_massdata_2018_08_raw$functionalGroup)) + 
+ggplot(NEON.Litter.data) +
+  geom_bar(aes(x = functionalGroup)) + 
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
 15. Using `geom_boxplot` and `geom_violin`, create a boxplot and a violin plot of dryMass by functionalGroup.
 
 ```{r boxplot of dryMass by functionalGroup}
-ggplot(NEON_NIWO_Litter_massdata_2018_08_raw) +
-  geom_boxplot(aes(x = NEON_NIWO_Litter_massdata_2018_08_raw$functionalGroup, y =NEON_NIWO_Litter_massdata_2018_08_raw$dryMass))
+ggplot(NEON.Litter.data) +
+  geom_boxplot(aes(x = functionalGroup, y = dryMass))
 
 ```
 ```{r}
-ggplot(NEON_NIWO_Litter_massdata_2018_08_raw) +
-  geom_violin(aes(x = NEON_NIWO_Litter_massdata_2018_08_raw$functionalGroup, y = NEON_NIWO_Litter_massdata_2018_08_raw$dryMass), 
+ggplot(NEON.Litter.data) +
+  geom_violin(aes(x = functionalGroup, y = dryMass), 
               draw_quantiles = c(0.25, 0.5, 0.75))
 ```
 
