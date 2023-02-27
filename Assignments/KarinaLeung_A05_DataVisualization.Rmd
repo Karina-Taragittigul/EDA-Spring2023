@@ -1,0 +1,181 @@
+---
+title: "Assignment 5: Data Visualization"
+author: "Karina Leung"
+date: "Spring 2023"
+output: pdf_document
+geometry: margin=2.54cm
+fig_height: 3
+fig_width: 4
+editor_options: 
+  chunk_output_type: console
+---
+
+## OVERVIEW
+
+This exercise accompanies the lessons in Environmental Data Analytics on Data Visualization 
+
+## Directions
+1.  Rename this file `<FirstLast>_A05_DataVisualization.Rmd` (replacing `<FirstLast>` with your first and last name).
+2. Change "Student Name" on line 3 (above) with your name.
+3. Work through the steps, **creating code and output** that fulfill each instruction.
+4. Be sure your code is tidy; use line breaks to ensure your code fits in the knitted output.
+5. Be sure to **answer the questions** in this assignment document.
+6. When you have completed the assignment, **Knit** the text and code into a single PDF file.
+
+---
+
+## Set up your session 
+
+1. Set up your session. Load the tidyverse, lubridate, here & cowplot packages, and verify your home directory. Upload the NTL-LTER processed data files for nutrients and chemistry/physics for Peter and Paul Lakes (use the tidy `NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv` version) and the processed data file for the Niwot Ridge litter dataset (use the `NEON_NIWO_Litter_mass_trap_Processed.csv` version). 
+
+2. Make sure R is reading dates as date format; if not change the format to date.
+
+```{r initialize project, message=FALSE, echo=FALSE}
+#1 
+library(tidyverse)
+library(lubridate)
+library(formatR)
+library(here)
+library(cowplot)
+library(viridis)
+
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=80), tidy=TRUE)
+
+here()
+
+PeterPaul.chem.nutrients <- read.csv(here("Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv"), stringsAsFactors = TRUE)
+
+NEON.litter.mass <- read.csv(here("Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv"), stringsAsFactors = TRUE)
+
+#2 
+
+PeterPaul.chem.nutrients$sampledate <- ymd(PeterPaul.chem.nutrients$sampledate)
+NEON.litter.mass$collectDate <- ymd(NEON.litter.mass$collectDate)
+
+```
+## Define your theme
+3. Build a theme and set it as your default theme. Customize the look of at least two of the following: 
+ * Plot background
+ * Plot title
+ * Axis labels
+ * Axis ticks/gridlines
+ * Legend
+
+```{r build plot theme, message=FALSE}
+#3
+mytheme <- theme_classic(base_size = 12) +
+  theme(axis.text = element_text(color = "black", size = 12), 
+        plot.title.position = "plot", 
+        plot.title = element_text(size = 16, face = "bold"),
+        axis.ticks = element_line(color = "black", linewidth = 0.5),
+        legend.background = element_rect(color='grey', fill = 'white'), 
+        legend.title = element_text(color='black'), 
+        legend.position = "right")
+```
+
+## Create graphs
+For numbers 4-7, create ggplot graphs and adjust aesthetics to follow best practices for data visualization. Ensure your theme, color palettes, axes, and additional aesthetics are edited accordingly.
+
+4. [NTL-LTER] Plot total phosphorus (`tp_ug`) by phosphate (`po4`), with separate aesthetics for Peter and Paul lakes. Add a line of best fit and color it black. Adjust your axes to hide extreme values (hint: change the limits using `xlim()` and/or `ylim()`).
+
+```{r plot total P vs PO4, message=FALSE}
+#4 
+TPvsPo <-  ggplot(PeterPaul.chem.nutrients, aes(x = tp_ug, y = po4, color = lakename)) +
+  geom_point() +
+  mytheme +
+  ylab(expression(y = "Phosphate")) +
+  xlab(expression(x =  "Total Phosphorus")) +
+  geom_smooth(method = lm, formula = y ~ x) +
+  ylim(0, 45)
+
+print(TPvsPo)
+```
+
+
+5. [NTL-LTER] Make three separate boxplots of (a) temperature, (b) TP, and (c) TN, with month as the x axis and lake as a color aesthetic. Then, create a cowplot that combines the three graphs. Make sure that only one legend is present and that graph axes are aligned. 
+
+Tip: R has a build in variable called `month.abb` that returns a list of months;see <https://r-lang.com/month-abb-in-r-with-example>
+
+```{r Create boxplots, message=FALSE}
+#5 
+# Checking month class
+class(PeterPaul.chem.nutrients$month)
+
+# Changing month to show all 12 and abbreviate
+factor(PeterPaul.chem.nutrients$month,
+       levels = 1:12,
+       labels = month.abb)
+
+# Making sure month shows up the way I want in a graph
+ggplot(PeterPaul.chem.nutrients, aes(x = factor(month, levels = 1:12, labels = month.abb))) +
+  geom_bar() +
+  scale_x_discrete(name = "month", drop=FALSE)
+
+# Plotting each of the three box plots
+PeterPaul.temp <- ggplot(PeterPaul.chem.nutrients, aes(x = month, y = temperature_C)) +
+  geom_boxplot(aes(x = factor(month, levels = 1:12, labels = month.abb), color = lakename)) +
+  scale_x_discrete(name = "month", drop=FALSE) +
+  labs(x = "Month", y = "Temperature in Celcius", color = "Lake Name") +
+  mytheme
+print(PeterPaul.temp)
+
+PeterPaul.TP <- ggplot(PeterPaul.chem.nutrients, aes(x = month, y = tp_ug)) +
+  geom_boxplot(aes(x = factor(month, levels = 1:12, labels = month.abb), color = lakename)) +
+  scale_x_discrete(name = "month", drop=FALSE) +
+  labs(x = "Month", y = "Total Phosphorus", color = "Lake Name") +
+  mytheme
+print(PeterPaul.TP)
+
+PeterPaul.TN <- ggplot(PeterPaul.chem.nutrients, aes(x = month, y = tn_ug)) +
+  geom_boxplot(aes(x = factor(month, levels = 1:12, labels = month.abb), color = lakename)) +
+  scale_x_discrete(name = "month", drop=FALSE) +
+  labs(x = "Month", y = "Total Nitrogen", color = "Lake Name") +
+  mytheme
+print(PeterPaul.TN)
+
+# Putting all three boxplots together
+plot_grid(PeterPaul.temp, PeterPaul.TN, PeterPaul.TP, nrow = 3, align = 'h', rel_heights = c(1.25, 1.5, 1.5))
+```
+
+Question: What do you observe about the variables of interest over seasons and between lakes? 
+
+> Answer: There appears to be more phosphorus and nitrogen during months with higher median temperatures, particularly July, August, and September.
+
+6. [Niwot Ridge] Plot a subset of the litter dataset by displaying only the "Needles" functional group. Plot the dry mass of needle litter by date and separate by NLCD class with a color aesthetic. (no need to adjust the name of each land use)
+
+7. [Niwot Ridge] Now, plot the same plot but with NLCD classes separated into three facets rather than separated by color. 
+
+```{r Plot litter, message=FALSE}
+#6
+# Checking collectDate class and turning into factor
+class(NEON.litter.mass$collectDate)
+as.factor(NEON.litter.mass$collectDate)
+
+# Generating subset plot
+Litter.subset <-  ggplot(subset(NEON.litter.mass, functionalGroup == "Needles"), aes(x = collectDate, y = dryMass, color = nlcdClass)) + 
+  geom_point() +
+  labs(
+title = "Needle Dry Mass Across Dates and Class",
+y = "Dry Mass",
+x = "Collection Date",
+color = "NLCD Class") +
+  mytheme
+
+print(Litter.subset)
+  
+
+#7
+Litter.subset.facet <-  ggplot(subset(NEON.litter.mass, functionalGroup == "Needles"), aes(x = collectDate, y = dryMass)) + 
+  geom_point() +
+  labs(
+title = "Needle Dry Mass Across Dates and Class",
+y = "Dry Mass",
+x = "Collection Date") +
+  mytheme +
+facet_wrap(vars(nlcdClass), nrow=3)
+
+print(Litter.subset.facet)
+```
+Question: Which of these plots (6 vs. 7) do you think is more effective, and why? 
+
+> Answer: I think displaying the data by facet makes it easier to visually see how needle dry mass varied by class across the collection dates. When the data is separated by only color, all the points are on one graph which makes it difficult to discern the individual differences between each class.
